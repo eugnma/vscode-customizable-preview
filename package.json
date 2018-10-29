@@ -1,0 +1,57 @@
+{
+    "name": "vscode-customizable-preview",
+    "displayName": "Customizable Preview",
+    "description": "Customizable Preview for Visual Studio Code",
+    "version": "0.1.0",
+    "publisher": "eugnma",
+    "engines": {
+        "vscode": "^1.27.0"
+    },
+    "categories": [
+        "Other"
+    ],
+    "icon": "images/icon.png",
+    "activationEvents": [
+        "onCommand:customizablePreview.preview"
+    ],
+    "main": "./out/extension",
+    "contributes": {
+        "commands": [
+            {
+                "command": "customizablePreview.preview",
+                "title": "Preview",
+                "category": "Customizable Preview"
+            }
+        ],
+        "configuration": {
+            "type": "object",
+            "title": "Customizable Preview configuration",
+            "properties": {
+                "customizablePreview.rules": {
+                    "type": "object",
+                    "default": [],
+                    "description": "Specifies the custom rules."
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "test": "npm run compile && node ./node_modules/vscode/bin/test"
+    },
+    "devDependencies": {
+        "typescript": "^2.6.1",
+        "vscode": "^1.1.21",
+        "tslint": "^5.8.0",
+        "@types/node": "^8.10.25",
+        "@types/mocha": "^2.2.42"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/eugnma/vscode-customizable-preview"
+    },
+    "dependencies": {}
+}
