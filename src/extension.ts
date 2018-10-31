@@ -91,7 +91,7 @@ class CustomizablePreviewManager {
                     default:
                         current._isRuleSpecified = true;
                         const ruleKey = x.substr(ruleQuickPickItemsPrefix.length);
-                        if (current._rule.key !== ruleKey) {
+                        if (!current._rule || current._rule.key !== ruleKey) {
                             current._rule = rules.find(x => x.key === ruleKey);
                             current._preview();
                         }
