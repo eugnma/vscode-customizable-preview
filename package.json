@@ -2,13 +2,18 @@
     "name": "vscode-customizable-preview",
     "displayName": "Customizable Preview",
     "description": "Customizable Preview for Visual Studio Code",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "publisher": "eugnma",
     "engines": {
         "vscode": "^1.27.0"
     },
     "categories": [
         "Other"
+    ],
+    "keywords": [
+        "Preview",
+        "Custom Preview",
+        "Customizable Preview"
     ],
     "icon": "images/icon.png",
     "activationEvents": [
@@ -28,9 +33,39 @@
             "title": "Customizable Preview configuration",
             "properties": {
                 "customizablePreview.rules": {
-                    "type": "object",
+                    "type": "array",
                     "default": [],
-                    "description": "Specifies the custom rules."
+                    "description": "Specifies the custom rules.",
+                    "items": {
+                        "type": "object",
+                        "title": "Rule configuration",
+                        "properties": {
+                            "groupName": {
+                                "type": "string",
+                                "description": "Optional, rule group name"
+                            },
+                            "name": {
+                                "type": "string",
+                                "description": "Rule name"
+                            },
+                            "description": {
+                                "type": "string",
+                                "description": "Optional, rule description"
+                            },
+                            "test": {
+                                "type": "string",
+                                "description": "The function in string tests whether the rule should be applied"
+                            },
+                            "command": {
+                                "type": "string",
+                                "description": "The external command"
+                            },
+                            "directFromCommand": {
+                                "type": "boolean",
+                                "description": "Optional, indicates whether to directly show the result from command"
+                            }
+                        }
+                    }
                 }
             }
         }
