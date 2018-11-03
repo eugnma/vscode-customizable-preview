@@ -126,15 +126,21 @@ class CustomizablePreviewManager {
         const rules = normalizeResult.normalizedRules;
         let rule = rules.find(x => self._isRuleSpecified ? x.key === self._rule.key : x.test(source));
         let candidate = undefined;
+        self._statusBar.color = undefined;
         if (rule) {
             self._rule = rule;
-            candidate = rule.command ? cp.execSync(rule.command, { input: source.text }).toString() : source.text;
             self._statusBar.text = `$(chevron-left)$(search)$(chevron-right) ${rule.name}`;
             self._statusBar.tooltip = rule.description;
+            try {
+                candidate = rule.command ? cp.execSync(rule.command, { input: source.text }).toString() : source.text;
+            } catch (ex) {
+                self._statusBar.color = 'red';
+                candidate = ex.stderr.toString();
+            }
         } else {
-            candidate = self.staticRef._ruleNotFound.description;
             self._statusBar.text = `$(chevron-left)$(search)$(chevron-right) ${self.staticRef._ruleNotFound.name}`;
             self._statusBar.tooltip = self.staticRef._ruleNotFound.description;
+            candidate = self.staticRef._ruleNotFound.description;
         }
         self._statusBar.show();
         self._panel.title = `${self.staticRef._previewPanelTitlePrefix}${source.filename}`;
