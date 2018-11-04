@@ -2,6 +2,8 @@
 
 Customizable Preview is a Visual Studio Code Extension to custom preview for any file.
 
+![Demo](.readme/demo.gif)
+
 ## Features
 
 * Support HTML preview by default
@@ -49,7 +51,7 @@ This extension contributes the following settings:
             // Mandatory, the external command, it uses the default behaviour
             // reads input from stdin, and output goes to stdout
             "command": "pandoc --from org --to html",
-            
+
             // Optional, indicates whether to directly show the result from
             // command, false to put the result in HTML body section by default
             "directFromCommand": true
