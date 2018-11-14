@@ -1,8 +1,8 @@
 'use strict';
 
-import * as cp from 'child_process';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import { CommandExecutor } from './commandExecutor';
 
 export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(vscode.commands.registerCommand('customizablePreview.preview', () => {
@@ -14,8 +14,6 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 class CustomizablePreviewManager {
-    private static readonly _previewPanelTitlePrefix = "Preview ";
-    private static readonly _reRuleName = /^[a-zA-Z0-9]([a-zA-Z0-9_ .-]*?[a-zA-Z0-9])?$/;
     private static readonly _defaultRules = [
         {
             "name": "HTML",
@@ -27,6 +25,9 @@ class CustomizablePreviewManager {
         "name": "??",
         "description": "No rule is matched"
     };
+    private static readonly _previewPanelTitlePrefix = "Preview ";
+    private static readonly _statusBarIcon = "$(chevron-left)$(search)$(chevron-right)";
+    private static readonly _reRuleName = /^[a-zA-Z0-9]([a-zA-Z0-9_ .-]*?[a-zA-Z0-9])?$/;
     private static _current: CustomizablePreviewManager | undefined;
     private readonly _panel: vscode.WebviewPanel;
     private readonly _statusBar: vscode.StatusBarItem;
@@ -35,6 +36,7 @@ class CustomizablePreviewManager {
     private _sourceLanguageId: string | undefined;
     private _rule: any;
     private _isRuleSpecified: boolean | undefined;
+    private _executingCommand: CommandExecutor | undefined;
     private get staticRef() { return CustomizablePreviewManager; }
 
     private constructor(panel: vscode.WebviewPanel, statusBar: vscode.StatusBarItem, initialSourceTextEditor: vscode.TextEditor) {
@@ -56,6 +58,7 @@ class CustomizablePreviewManager {
         panel.iconPath = vscode.Uri.file(path.join(extensionPath, 'images/icon.png'));
         const statusBar = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right);
         statusBar.command = 'customizablePreview.selectRule';
+        statusBar.show();
         self._current = new CustomizablePreviewManager(panel, statusBar, initialSourceTextEditor);
         self._current._livePreview();
     }
@@ -114,8 +117,11 @@ class CustomizablePreviewManager {
         }
     }
 
-    private _preview(textEditor?: vscode.TextEditor | undefined) {
+    private _preview(textEditor?: vscode.TextEditor) {
         const self = this;
+        if (self._executingCommand) {
+            self._executingCommand.kill();
+        }
         textEditor && (self._sourceTextEditor = textEditor);
         const source = self.staticRef._getPreviewSource(self._sourceTextEditor);
         const normalizeResult = self.staticRef._getNormalizedRules();
@@ -124,27 +130,36 @@ class CustomizablePreviewManager {
             return;
         }
         const rules = normalizeResult.normalizedRules;
-        let rule = rules.find(x => self._isRuleSpecified ? x.key === self._rule.key : x.test(source));
-        let candidate = undefined;
-        self._statusBar.color = undefined;
-        if (rule) {
-            self._rule = rule;
-            self._statusBar.text = `$(chevron-left)$(search)$(chevron-right) ${rule.name}`;
-            self._statusBar.tooltip = rule.description;
-            try {
-                candidate = rule.command ? cp.execSync(rule.command, { input: source.text }).toString() : source.text;
-            } catch (ex) {
-                self._statusBar.color = 'red';
-                candidate = ex.stderr.toString();
-            }
-        } else {
-            self._statusBar.text = `$(chevron-left)$(search)$(chevron-right) ${self.staticRef._ruleNotFound.name}`;
-            self._statusBar.tooltip = self.staticRef._ruleNotFound.description;
-            candidate = self.staticRef._ruleNotFound.description;
-        }
-        self._statusBar.show();
+        const rule = rules.find(x => self._isRuleSpecified ? x.key === self._rule.key : x.test(source));
         self._panel.title = `${self.staticRef._previewPanelTitlePrefix}${source.filename}`;
-        self._panel.webview.html = rule && rule.directFromCommand ? candidate : self.staticRef._getHtmlForWebview(candidate);
+        if (!rule) {
+            self._statusBar.text = `${self.staticRef._statusBarIcon} ${self.staticRef._ruleNotFound.name}`;
+            self._statusBar.tooltip = self.staticRef._ruleNotFound.description;
+            self._panel.webview.html = self.staticRef._getHtmlForWebview(self.staticRef._ruleNotFound.description);
+            return;
+        }
+        self._rule = rule;
+        self._statusBar.text = `${self.staticRef._statusBarIcon} ${rule.name}`;
+        self._statusBar.tooltip = rule.description;
+        if (!rule.command) {
+            self._panel.webview.html = rule.directFromCommand ? source.text : self.staticRef._getHtmlForWebview(source.text);
+            return;
+        }
+        self._executingCommand = new CommandExecutor({
+            command: rule.command,
+            input: source.text,
+            callback: (killed, error, result) => {
+                self._executingCommand = undefined;
+                if (error === undefined) {
+                    self._statusBar.color = undefined;
+                    const candidate = result || '';
+                    self._panel.webview.html = rule.directFromCommand ? candidate : self.staticRef._getHtmlForWebview(candidate);
+                } else if (!killed) {
+                    self._statusBar.color = 'red';
+                    self._panel.webview.html = self.staticRef._getHtmlForWebview(error || '');
+                }
+            }
+        });
     }
 
     private _livePreview() {
@@ -175,7 +190,7 @@ class CustomizablePreviewManager {
         };
     }
 
-    private static _getNormalizedRules(groupName?: string | undefined) {
+    private static _getNormalizedRules(groupName?: string) {
         const self = this;
         const settings = vscode.workspace.getConfiguration('customizablePreview');
         const customRules = settings.get<any[]>('rules') || [];

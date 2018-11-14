@@ -3,7 +3,8 @@
 		"no-string-throw": true,
 		"no-unused-expression": [
 			true,
-			"allow-fast-null-checks"
+			"allow-fast-null-checks",
+			"allow-new"
 		],
 		"no-duplicate-variable": true,
 		"curly": true,
