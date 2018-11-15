@@ -66,6 +66,10 @@ This extension contributes the following settings:
     ]
     ```
 
+## Change Log
+
+See CHANGELOG [here](CHANGELOG.md)
+
 ### For more information
 
 * [CommonMark](https://commonmark.org)
