@@ -2,7 +2,7 @@
     "name": "vscode-customizable-preview",
     "displayName": "Customizable Preview",
     "description": "Customizable Preview for Visual Studio Code",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "publisher": "eugnma",
     "engines": {
         "vscode": "^1.27.0"
