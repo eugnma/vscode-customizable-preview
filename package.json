@@ -57,8 +57,21 @@
                                 "description": "The function in string tests whether the rule should be applied"
                             },
                             "command": {
-                                "type": "string",
-                                "description": "The external command"
+                                "type": [
+                                    "string",
+                                    "object"
+                                ],
+                                "description": "The external command",
+                                "properties": {
+                                    "saved": {
+                                        "type": "string",
+                                        "description": "The external command for saved files"
+                                    },
+                                    "unsaved": {
+                                        "type": "string",
+                                        "description": "The external command for unsaved files"
+                                    }
+                                }
                             },
                             "directFromCommand": {
                                 "type": "boolean",

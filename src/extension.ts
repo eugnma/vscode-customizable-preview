@@ -28,6 +28,7 @@ class CustomizablePreviewManager {
     private static readonly _previewPanelTitlePrefix = "Preview ";
     private static readonly _statusBarIcon = "$(chevron-left)$(search)$(chevron-right)";
     private static readonly _reRuleName = /^[a-zA-Z0-9]([a-zA-Z0-9_ .-]*?[a-zA-Z0-9])?$/;
+    private static readonly _reCommandFunction = /[a-z_$][a-z_$0-9]*?(?: )+?=>(?: )+?[^ ]+?/i;
     private static _current: CustomizablePreviewManager | undefined;
     private readonly _panel: vscode.WebviewPanel;
     private readonly _statusBar: vscode.StatusBarItem;
@@ -145,8 +146,10 @@ class CustomizablePreviewManager {
             self._panel.webview.html = rule.directFromCommand ? source.text : self.staticRef._getHtmlForWebview(source.text);
             return;
         }
+        const candidateCommand = !source.isUntitled ? rule.command.saved : rule.command.unsaved;
+        const actualCommand = this.staticRef._getCommandString(candidateCommand, source);
         self._executingCommand = new CommandExecutor({
-            command: rule.command,
+            command: actualCommand,
             input: source.text,
             callback: (killed, error, result) => {
                 self._executingCommand = undefined;
@@ -186,6 +189,8 @@ class CustomizablePreviewManager {
             languageId: editor.document.languageId,
             filename: path.basename(editor.document.fileName),
             extname: path.extname(editor.document.fileName),
+            dirname: !editor.document.isUntitled ? path.dirname(editor.document.fileName) : undefined,
+            isUntitled: editor.document.isUntitled,
             text: editor.document.getText()
         };
     }
@@ -210,7 +215,7 @@ class CustomizablePreviewManager {
                     name: rule.name,
                     description: rule.description,
                     test: eval(`(${rule.test})`),
-                    command: rule.command,
+                    command: this._normalizeCommand(rule.command),
                     directFromCommand: rule.directFromCommand
                 });
             } catch {
@@ -222,6 +227,21 @@ class CustomizablePreviewManager {
             result = result.filter(x => x.groupName === groupName);
         }
         return { success: !invalidRule, normalizedRules: result, invalidRule: invalidRule };
+    }
+
+    private static _normalizeCommand(command: any) {
+        return command ? {
+            saved: this._normalizeSingleCommand(command.saved || command),
+            unsaved: this._normalizeSingleCommand(command.unsaved || command)
+        } : undefined;
+    }
+
+    private static _normalizeSingleCommand(command: string | undefined) {
+        return command ? (this._reCommandFunction.test(command) ? eval(`(${command})`) : command) : undefined;
+    }
+
+    private static _getCommandString(command: string | ((x: any) => string), source: any) {
+        return typeof (command) === 'string' ? command : command(source);
     }
 
     private static _notifyInvalidRule(rule: any) {
