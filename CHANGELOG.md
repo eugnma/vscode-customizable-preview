@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update dependencies
 - Allow dynamically configure commands
 
+### Fixed
+- Fix a rule update issue while changing the active text editor
+
 ## [0.1.2] - 2018-11-19
 ### Changed
 - Change the extension's status bar color to red if failed to execute the external command
