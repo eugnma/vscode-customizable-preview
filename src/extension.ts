@@ -172,6 +172,7 @@ class CustomizablePreviewManager {
             self._preview();
         }, null, self._disposables);
         vscode.window.onDidChangeActiveTextEditor(e => {
+            self._rule = undefined;
             e && ['file', 'untitled'].includes(e.document.uri.scheme) && self._preview(e);
         }, null, self._disposables);
         vscode.languages.onDidChangeDiagnostics(_e => {
