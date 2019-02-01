@@ -25,7 +25,7 @@ Open the [Command Palette](https://code.visualstudio.com/docs/getstarted/userint
 
 This extension contributes the following settings:
 
-* `customizablePreview.rules`: Specifies the custom rules
+* `customizablePreview.rules`: Specifies the custom rules, below is a sample for Org-mode preview
     ```js
     [
         {
@@ -45,11 +45,22 @@ This extension contributes the following settings:
             "description": "Org-mode Preview",
 
             // Mandatory, the function in string tests whether the rule should
-            // be applied
+            // be applied.
+            // You can see below input parameter section for more details
             "test": "x => x.languageId == 'org' || x.extname == '.org'",
 
             // Mandatory, the external command, it uses the default behaviour
-            // reads input from stdin, and output goes to stdout
+            // reads input from stdin, and output goes to stdout.
+            // A command can be a string command, a function command, a plain object command.
+            // A string command (e.g. stringCommand) equals to a function command:
+            //   x => stringCommand
+            // A single command (e.g. singleCommand) equals to a plain object command:
+            //   {
+            //     saved: singleCommand,
+            //     unsaved: singleCommand
+            //   },
+            // The saved or unsaved properties specify a file is saved or not.
+            // You can see below input parameter section for more details
             "command": "pandoc --from org --to html",
 
             // Optional, indicates whether to directly show the result from
@@ -64,6 +75,17 @@ This extension contributes the following settings:
         .
         */
     ]
+    ```
+* The file info of previewing file is the input parameter of the functions from settings, below is a sample
+    ```js
+    {
+        languageId: "org", // The language ID
+        filename: "/tmp/demo.org", // The filename with full path
+        extname: ".org", // The file extension
+        dirname: "/tmp", // The directory name of the file path
+        isUntitled: false, // Indicates a file is untitled or not
+        text: "demo" // The content
+    }
     ```
 
 ## Change Log
