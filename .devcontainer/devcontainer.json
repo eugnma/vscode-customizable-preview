@@ -1,0 +1,8 @@
+{
+    "name": "Node.js",
+    "dockerFile": "Dockerfile",
+    "runArgs": [
+        "--disable-content-trust"
+    ],
+    "postCreateCommand": "npm install"
+}
