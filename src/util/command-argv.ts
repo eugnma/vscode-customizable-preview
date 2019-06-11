@@ -1,6 +1,6 @@
 'use strict';
 
-export function commandArgv(command: string) {
+export function commandArgv(command: string): string[] {
     // Possible undefined or null if calling from pure JavaScript.
     if (!command) { throw new Error('Not found any valid command.'); }
 
