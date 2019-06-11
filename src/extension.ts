@@ -179,6 +179,7 @@ class CustomizablePreviewManager {
         self._statusBar.text = `${self.staticRef._statusBarIcon} ${rule.name}`;
         self._statusBar.tooltip = rule.description;
         if (!rule.command) {
+            self._statusBar.color = undefined;
             self._panel.webview.html = rule.directFromCommand ? source.text : self.staticRef._getHtmlForWebview(source.text);
             return;
         }
