@@ -188,6 +188,7 @@ class CustomizablePreviewManager {
         self._executingCommand = new CommandExecutor({
             command: actualCommand,
             input: source.text,
+            cwd: source.dirname,
             callback: (killed, error, result): void => {
                 self._executingCommand = undefined;
                 if (error === undefined) {
