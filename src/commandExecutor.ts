@@ -9,13 +9,18 @@ export class CommandExecutor {
     public constructor(options: {
         command: string;
         input?: string;
+        cwd?: string;
         callback: (killed: boolean, error: string | undefined, result?: string) => void;
     }) {
         // On Linux, child processes of child processes will not be terminated when attempting to kill their parent.
         // Use parsing the argv of commands instead of passing shell option with true to avoid the problem.
         // (https://nodejs.org/api/child_process.html#child_process_subprocess_kill_signal)
         const argv = commandArgv(options.command);
-        this._childProcess = cp.spawn(argv[0], argv.slice(1));
+        const cpOptions: cp.SpawnOptions = {
+            cwd: options.cwd
+        };
+
+        this._childProcess = cp.spawn(argv[0], argv.slice(1), cpOptions);
         this._invoke(options.input || '', options.callback);
     }
 
@@ -32,7 +37,7 @@ export class CommandExecutor {
     ): void {
         const self = this,
             childProcess = self._childProcess;
-        let result = { stdout: '', errMsg: '' };
+        const result = { stdout: '', errMsg: '' };
         childProcess.stdout.on('data', (data): void => {
             result.stdout += String(data);
         });
