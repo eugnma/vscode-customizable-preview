@@ -4,5 +4,8 @@
     "runArgs": [
         "--disable-content-trust"
     ],
+    "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash"
+    },
     "postCreateCommand": "npm install"
 }

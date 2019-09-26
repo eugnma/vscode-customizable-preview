@@ -1,7 +1,4 @@
-FROM node:lts-stretch
-
-# Set the default shell to bash rather than sh
-ENV SHELL /bin/bash
+FROM node:lts
 
 # Use a non-root user
 RUN groupadd default && useradd -m -g default default
