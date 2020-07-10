@@ -27,7 +27,9 @@ export class CommandExecutor {
     public kill(): void {
         const self = this;
         // Destroy stdin to prevent SIGPIPE signals.
-        self._childProcess.stdin.destroy();
+        if (self._childProcess.stdin) {
+            self._childProcess.stdin.destroy();
+        }
         self._childProcess.kill();
     }
 
@@ -38,13 +40,17 @@ export class CommandExecutor {
         const self = this,
             childProcess = self._childProcess;
         const result = { stdout: '', errMsg: '' };
-        childProcess.stdout.on('data', (data): void => {
-            result.stdout += String(data);
-        });
-        childProcess.stderr.on('data', (data): void => {
-            result.stdout = '';
-            result.errMsg += String(data);
-        });
+        if (childProcess.stdout) {
+            childProcess.stdout.on('data', (data): void => {
+                result.stdout += String(data);
+            });
+        }
+        if (childProcess.stderr) {
+            childProcess.stderr.on('data', (data): void => {
+                result.stdout = '';
+                result.errMsg += String(data);
+            });
+        }
         const onChildProcessEnd = (success: boolean): void => success ? callback(childProcess.killed, undefined, result.stdout) : callback(childProcess.killed, result.errMsg);
         // The 'exit' event may or may not fire after an error has occurred.
         // (https://nodejs.org/api/child_process.html#child_process_event_error)
@@ -55,7 +61,7 @@ export class CommandExecutor {
         childProcess.on('exit', (code, _signal): void => onChildProcessEnd(code === 0));
         // Always check pid before using stdin to prevent SIGPIPE signals.
         // (https://github.com/nodejs/help/issues/1191)
-        if (childProcess.pid) {
+        if (childProcess.pid && childProcess.stdin) {
             childProcess.stdin.write(input);
             childProcess.stdin.end();
         }

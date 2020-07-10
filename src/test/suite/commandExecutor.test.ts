@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import * as os from 'os';
-import { CommandExecutor } from '../commandExecutor';
+import { CommandExecutor } from '../../commandExecutor';
 
 suite("CommandInvoker", function (): void {
     test("Execute existing commands without killing", function (done): void {

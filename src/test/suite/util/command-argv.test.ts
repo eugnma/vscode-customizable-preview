@@ -1,5 +1,5 @@
 import * as assert from 'assert';
-import { commandArgv } from '../../util/command-argv';
+import { commandArgv } from '../../../util/command-argv';
 
 suite("command-argv", function (): void {
     test("Parse empty commands", function (): void {
